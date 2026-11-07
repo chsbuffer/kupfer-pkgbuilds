@@ -1,0 +1,42 @@
+# Imported from Arch Linux ARM: aur/qrtr-git/PKGBUILD
+# https://github.com/archlinuxarm/PKGBUILDs/tree/master/aur/qrtr-git
+_mode=host
+_crossdirect=false
+_arches=specific
+
+# Maintainer: Jami Kettunen <jami.kettunen@protonmail.com>
+# Contributor: Raihan Ahamed <raihan1999ahamed@gmail.com>
+
+buildarch=8
+
+_pkgname="qrtr"
+pkgname="$_pkgname-git"
+pkgdesc="Userspace reference for net/qrtr in the Linux kernel"
+pkgver=r124.a38e9af
+pkgrel=1
+arch=("aarch64")
+url="https://github.com/linux-msm/$_pkgname"
+license=("BSD-3-Clause")
+groups=("qcom-icnss-wlan")
+depends=("glibc")
+makedepends=("git" "meson" "gcc" "linux-headers")
+provides=("$_pkgname")
+source=("git+https://github.com/linux-msm/$_pkgname")
+md5sums=("SKIP")
+
+pkgver() {
+	cd "$_pkgname"
+
+	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+	arch-meson $_pkgname build
+	meson compile -C build
+}
+
+package() {
+	meson install -C build --destdir "$pkgdir"
+
+	install -Dm644 "$_pkgname"/LICENSE "$pkgdir"/usr/share/licenses/$_pkgname/COPYING
+}

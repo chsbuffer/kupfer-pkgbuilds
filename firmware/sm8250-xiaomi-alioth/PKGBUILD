@@ -1,0 +1,29 @@
+_mode=cross
+_nodeps=true
+pkgname=firmware-sm8250-xiaomi-alioth
+pkgver=1
+pkgrel=1
+pkgdesc="Device firmware for Xiaomi alioth"
+_arches=specific
+arch=(aarch64)
+url="https://github.com/N1kroks/firmware-xiaomi-alioth"
+license=(LicenseRef-proprietary)
+options=(!strip !debug)
+_commit=95dfcdf6b154c00af3e093db82015cda90f4299a
+source=(
+    "firmware-xiaomi-alioth.tar.gz::$url/archive/$_commit/firmware-xiaomi-alioth-$_commit.tar.gz"
+    firmware.files
+)
+sha512sums=(
+    2d110d8642dc2e7f83e4445f78b9019083d9c8712a1cb24742ce1ebfea10d540e1031daa124cb9917b4cf640d9ac53f7e3ab3ddbc7b624dcdcc81f85c0b2664b
+    b932e91107f1104182f1ce74de102f8dc2bcbed75700111f1f3d8e8cee7c826855c6d58f4a3e246f8459c1828f617e9e07475ff7352f4171185bd1244b8d51b4
+)
+
+package() {
+    local path dest
+    while IFS= read -r path || [[ -n "$path" ]]; do
+        path="${path#./}"
+        dest="${path#lib/}"
+        install -Dm644 "$srcdir/firmware-xiaomi-alioth-$_commit/$path" "$pkgdir/usr/lib/$dest"
+    done < "$srcdir/firmware.files"
+}

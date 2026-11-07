@@ -1,0 +1,78 @@
+_mode=cross
+_nodeps=true
+pkgname=linux-sm8250-alioth
+pkgver=7.2.0
+pkgrel=2
+pkgdesc="Qualcomm SM8250 kernel for Xiaomi alioth (HyperOS memory layout)"
+_arches=specific
+arch=(aarch64)
+url="https://gitlab.postmarketos.org/soc/qualcomm-sm8250/linux"
+license=(GPL-2.0-only)
+depends=(coreutils kmod mkinitcpio)
+makedepends=(bc bison flex clang llvm lld libelf openssl pahole python kmod cpio dtc)
+options=(!strip !debug !lto)
+backup=(etc/mkinitcpio.d/linux.preset)
+_tag="sm8250-$pkgver"
+_archive="linux-postmarketos-qcom-sm8250-alioth-$_tag.tar.gz"
+source=(
+    "$_archive::$url/-/archive/$_tag/linux-$_tag.tar.gz"
+    config-postmarketos-qcom-sm8250-alioth.aarch64
+    0001-Added-POCO-F3-dts-panel-and-touchscreen-drivers.patch
+    0002-alioth-hyperos-firmware-memory-layout.patch
+    0002-Disable-panel-and-touchscreen.patch
+    linux.preset
+    60-linux.hook
+    90-linux.hook
+)
+sha512sums=(
+    26d48ebd04c43e993bd00f9c055d40daf87b4919332c974e3c0db236135b522415e3dcf4b512e4028cc42da63fe4639991c3870bcb977967846db590a0b950b7
+    fad174b4e13fd5562c4be324ade4e516fc6e698b92200c62e939df1938880bc8df7546467926f94baa3e2f81b964f5a310a93f0ff548cc99ec96bbfeae1d4369
+    041f7dc7c8e1f3ef39e00a6466ed16b6e74305d288a328f31a6ce32cb07aa80b96ff7930ea87e054463ff317d3d3b7ae8f360f6ba33bb1857a10d326863c4aa1
+    64472e69df200f2571bb20a0ebeda92cb19f9acf5bffb0f78b447066b1187ed2ff453ddc76256663abaa506cb88dfe2f901e7fde361e3e6729f3fc7342cde30b
+    7e83a7179101e1a1487640bc85be4030a7f24eb0b692925aae8f35dcc31ab6b20e8fec822d5af9c84b08c64752f5bb935161b79d057caada3cbed042cc324daa
+    a492aae17ee4a316ce03faf9f1b284b2529c485f4b092cc4a1f865a6c68d482fd356fd30efa296c116975a3bdf3922f5bf03912a8d0e76f4ab24aa6ab9f8c276
+    7ad5be75ee422dda3b80edd2eb614d8a9181e2c8228cd68b3881e2fb95953bf2dea6cbe7900ce1013c9de89b2802574b7b24869fc5d7a95d3cc3112c4d27063a
+    b6b3ddd1a3c1e33341aa43a6cbe205c81c13ca6632fa7e553152d71b5fe45bdf44aea099514ccd1d78055a4656bf0ac3c7cb2f3a14abb2a5ab8872a7dcacff08
+)
+
+prepare() {
+    cd "$srcdir/linux-$_tag"
+    patch -Np1 -i "$srcdir/0001-Added-POCO-F3-dts-panel-and-touchscreen-drivers.patch"
+    patch -Np1 -i "$srcdir/0002-alioth-hyperos-firmware-memory-layout.patch"
+    patch -Np1 -i "$srcdir/0002-Disable-panel-and-touchscreen.patch"
+    cp "$srcdir/config-postmarketos-qcom-sm8250-alioth.aarch64" .config
+    make ARCH=arm64 LLVM=1 olddefconfig
+}
+
+build() {
+    cd "$srcdir/linux-$_tag"
+    unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+    make ARCH=arm64 LLVM=1 KBUILD_BUILD_VERSION="2-postmarketos-qcom-sm8250-alioth" Image.gz modules dtbs
+}
+
+package() {
+    cd "$srcdir/linux-$_tag"
+    unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+    local kernver
+    kernver="$(make -s ARCH=arm64 LLVM=1 kernelrelease)"
+    make ARCH=arm64 LLVM=1 DEPMOD=/usr/bin/true         INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 modules_install
+    local link
+    for link in "$pkgdir/usr/lib/modules/$kernver/build" "$pkgdir/usr/lib/modules/$kernver/source"; do
+        if [[ -L "$link" ]]; then unlink "$link"; fi
+    done
+    depmod -b "$pkgdir/usr" -F System.map "$kernver"
+    install -Dm644 arch/arm64/boot/Image.gz "$pkgdir/boot/Image.gz"
+    install -Dm644 arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dtb         "$pkgdir/boot/dtbs/qcom/sm8250-xiaomi-alioth.dtb"
+    install -Dm644 .config "$pkgdir/boot/config-linux-sm8250-alioth"
+    install -Dm644 System.map "$pkgdir/boot/System.map-linux-sm8250-alioth"
+    printf '%s\n' "$pkgname" > "$pkgdir/usr/lib/modules/$kernver/pkgbase"
+    # No separate extramodules directory is shipped by this kernel.
+    local subst="s/%PKGBASE%/$pkgname/g; s/%KERNVER%/$kernver/g; /%EXTRAMODULES%/d"
+    sed "$subst" "$srcdir/linux.preset" |
+        install -Dm644 /dev/stdin "$pkgdir/etc/mkinitcpio.d/linux.preset"
+    local hook
+    for hook in 60 90; do
+        sed "$subst" "$srcdir/$hook-linux.hook" |
+            install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/$hook-$pkgname.hook"
+    done
+}

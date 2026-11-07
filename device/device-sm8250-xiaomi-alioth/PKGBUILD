@@ -1,0 +1,50 @@
+_mode=cross
+_nodeps=true
+pkgname=device-sm8250-xiaomi-alioth
+pkgver=0.1
+pkgrel=1
+pkgdesc="Xiaomi Poco F3 (alioth), minimal headless device support"
+_arches=specific
+arch=(aarch64)
+license=(MIT)
+depends=(
+    linux-sm8250-alioth
+    firmware-sm8250-xiaomi-alioth
+    linux-firmware-qcom
+    linux-firmware-atheros
+    alsa-ucm-conf
+    boot-android-common
+    meta-qbootctl
+    tqftpserv-git
+    qrtr-git
+)
+source=(
+    deviceinfo
+    wifi-powersave.conf
+    81-libssc-xiaomi-alioth.rules
+    alioth.conf
+    HiFi.conf
+    alioth-ucm.conf
+    alioth.lst
+)
+sha512sums=(
+    7eaa33294cea8f7690ebaf530ed3c40b2426ed797a697bd4ccfb77d7cb1cb7d7d249c4d55105e1d3e741ac9f67a1f6741a2e8a678b5c80c038b6fa6f56363c79
+    21676a9e1079f1b86b840b7c86a65c1cc960a458eb9e219a7a16029b92a9d2f1ecfc9c3ff18b0ec1c86f624fe6a435fecd3b1db0d3cd1a0f3c6c3cac78ab996f
+    2c16ba75e0077b2b1eaefa4c73b287475505a1aeb291ec29316d41cc094277320f9d2aaabfd91eb1dc0f488ab2d61a94faef16e7afe0f1e226779113761b9a37
+    36a8365d6b9a41e60cbe9fc692dc2c3acd6d9e5e6dfb9fdc28155f6c210bcd6580954461bd7ee5b7a9aed25307fa4ad1c5ebde87bbf67f39f62738761add1c4d
+    7e1ac8d01a948c1d60cb397e702872b679f650b04431e7d1a550fb618f2ed431efc04f1dec671c3b5d243d55b3699892256ea0676248e69e0f1c38f7c2001db0
+    8db13314073e15c45defa9d366e5d1a88d21f87491edea0d0242c370d248022acaef39b6cf74bfaaa45d474eb045ba8de2427c29095978f5f184dda1ae55d53b
+    46fb348b7185cd825c475fb740bf72db00b050eed49f6402170353d2d23723d02b9bca54f39fdd95f58bc64d8af8dfcc8502370f7bd7a2e8421147ce411289fe
+)
+
+package() {
+    install -Dm644 "$srcdir/deviceinfo" "$pkgdir/etc/kupfer/deviceinfo"
+    install -Dm644 "$srcdir/alioth.conf" "$pkgdir/etc/kupfer/mkinitcpio.conf.d/alioth.conf"
+    install -Dm644 "$srcdir/alioth.lst" "$pkgdir/etc/kupfer/systemd/alioth.lst"
+    install -Dm644 "$srcdir/wifi-powersave.conf" "$pkgdir/etc/NetworkManager/conf.d/wifi-powersave.conf"
+    install -Dm644 "$srcdir/81-libssc-xiaomi-alioth.rules" "$pkgdir/usr/lib/udev/rules.d/81-libssc-xiaomi-alioth.rules"
+    install -Dm644 "$srcdir/alioth-ucm.conf" "$pkgdir/usr/share/alsa/ucm2/Xiaomi/alioth/alioth.conf"
+    install -Dm644 "$srcdir/HiFi.conf" "$pkgdir/usr/share/alsa/ucm2/Xiaomi/alioth/HiFi.conf"
+    install -dm755 "$pkgdir/usr/share/alsa/ucm2/conf.d/sm8250"
+    ln -s ../../Xiaomi/alioth/alioth.conf "$pkgdir/usr/share/alsa/ucm2/conf.d/sm8250/xiaomi-alioth.conf"
+}

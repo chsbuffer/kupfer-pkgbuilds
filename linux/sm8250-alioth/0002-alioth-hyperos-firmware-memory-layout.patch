@@ -1,0 +1,138 @@
+--- a/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
++++ b/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
+@@ -27,6 +27,16 @@
+ /delete-node/ &slpi_mem;
+ /delete-node/ &spss_mem;
+ /delete-node/ &xbl_aop_mem;
++/delete-node/ &removed_mem;
++/delete-node/ &camera_mem;
++/delete-node/ &wlan_mem;
++/delete-node/ &ipa_fw_mem;
++/delete-node/ &ipa_gsi_mem;
++/delete-node/ &gpu_mem;
++/delete-node/ &npu_mem;
++/delete-node/ &video_mem;
++/delete-node/ &cvp_mem;
++/delete-node/ &cdsp_mem;
+ 
+ / {
+ 
+@@ -150,29 +160,100 @@
+ 		};
+ 	};
+ 
++	/* Match HyperOS 1.0 alioth DTBO firmware layout. */
+ 	reserved-memory {
+-		xbl_aop_mem: xbl-aop@80700000 {
++		xbl_aop_mem: xbl-aop@80600000 {
+ 			reg = <0x0 0x80600000 0x0 0x260000>;
+ 			no-map;
+ 		};
+ 
+-		slpi_mem: slpi@88c00000 {
+-			reg = <0x0 0x88c00000 0x0 0x2f00000>;
+-			no-map;
+-		};
+-
+-		adsp_mem: adsp@8bb00000 {
+-			reg = <0x0 0x8bb00000 0x0 0x2500000>;
+-			no-map;
+-		};
+-
+-		spss_mem: spss@8e000000 {
+-			reg = <0x0 0x8e000000 0x0 0x100000>;
+-			no-map;
+-		};
+-
+-		cdsp_secure_heap: cdsp-secure-heap@8e100000 {
+-			reg = <0x0 0x8e100000 0x0 0x4600000>;
++		xbl_uefi_log: xbl-log@80880000 {
++			reg = <0x0 0x80880000 0x0 0x14000>;
++			no-map;
++		};
++
++		removed_mem: removed_region@80b00000 {
++			reg = <0x0 0x80b00000 0x0 0xaf00000>;
++			no-map;
++		};
++
++		camera_mem: camera@8be00000 {
++			reg = <0x0 0x8be00000 0x0 0x500000>;
++			no-map;
++		};
++
++		wlan_mem: wlan@8c300000 {
++			reg = <0x0 0x8c300000 0x0 0x100000>;
++			no-map;
++		};
++
++		ipa_fw_mem: ipa-fw@8c400000 {
++			reg = <0x0 0x8c400000 0x0 0x10000>;
++			no-map;
++		};
++
++		ipa_gsi_mem: ipa-gsi@8c410000 {
++			reg = <0x0 0x8c410000 0x0 0xa000>;
++			no-map;
++		};
++
++		gpu_mem: gpu@8c41a000 {
++			reg = <0x0 0x8c41a000 0x0 0x2000>;
++			no-map;
++		};
++
++		npu_mem: npu@8c500000 {
++			reg = <0x0 0x8c500000 0x0 0x500000>;
++			no-map;
++		};
++
++		video_mem: video@8ca00000 {
++			reg = <0x0 0x8ca00000 0x0 0x500000>;
++			no-map;
++		};
++
++		cvp_mem: cvp@8cf00000 {
++			reg = <0x0 0x8cf00000 0x0 0x500000>;
++			no-map;
++		};
++
++		cdsp_mem: cdsp@8d400000 {
++			reg = <0x0 0x8d400000 0x0 0x1400000>;
++			no-map;
++		};
++
++		slpi_mem: slpi@8e800000 {
++			reg = <0x0 0x8e800000 0x0 0x2f00000>;
++			no-map;
++		};
++
++		adsp_mem: adsp@91700000 {
++			reg = <0x0 0x91700000 0x0 0x2500000>;
++			no-map;
++		};
++
++		spss_mem: spss@93c00000 {
++			reg = <0x0 0x93c00000 0x0 0x100000>;
++			no-map;
++		};
++
++		cdsp_secure_heap: cdsp-secure-heap@93d00000 {
++			reg = <0x0 0x93d00000 0x0 0x4600000>;
++			no-map;
++		};
++
++		cont_splash_mem: cont-splash@9c000000 {
++			reg = <0x0 0x9c000000 0x0 0x2300000>;
++			no-map;
++		};
++
++		dfps_data_mem: dfps-data@9e300000 {
++			reg = <0x0 0x9e300000 0x0 0x100000>;
++			no-map;
++		};
++
++		disp_rdump_mem: display-dump@b0400000 {
++			reg = <0x0 0xb0400000 0x0 0x1000000>;
+ 			no-map;
+ 		};
+ 	};
