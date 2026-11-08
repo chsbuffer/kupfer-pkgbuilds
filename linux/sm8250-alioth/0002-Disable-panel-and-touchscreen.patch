@@ -1,22 +1,47 @@
-diff --git a/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts b/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
-index 4652c6241..842258f27 100644
 --- a/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
 +++ b/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
-@@ -678,7 +678,7 @@ zap-shader {
- };
-
+@@ -761,13 +761,13 @@
  &mdss {
+ 	status = "okay";
+ };
+ 
+ &mdss_dsi0 {
+ 	vdda-supply = <&vreg_l9a_1p2>;
+-	status = "okay";
++	status = "disabled";
+ 
+ 	panel: panel@0 {
+ 		compatible = "xiaomi,alioth-ams667xx01";
+ 		reg = <0>;
+ 
+ 		pinctrl-0 = <&sde_dsi_active &sde_te_active_sleep>;
+@@ -790,13 +790,13 @@
+ 	remote-endpoint = <&panel_in>;
+ 	data-lanes = <0 1 2 3>;
+ };
+ 
+ &mdss_dsi0_phy {
+ 	vdds-supply = <&vreg_l5a_0p88>;
 -	status = "okay";
 +	status = "disabled";
  };
-
- &mdss_dsi0 {
-@@ -898,7 +898,7 @@ &qup_spi4_data_clk {
+ 
+ &i2c1 {
+ 	status = "okay";
+ 	clock-frequency = <400000>;
+ 
+@@ -976,13 +976,13 @@
+ &qup_spi4_data_clk {
+ 	drive-strength = <6>;
+ 	bias-disable;
  };
-
+ 
  &spi4 {
 -	status = "okay";
 +	status = "disabled";
  	pinctrl-names = "default";
  	pinctrl-0 = <&qup_spi4_data_clk &qup_spi4_cs_gpio>;
  	cs-gpios = <&tlmm 11 GPIO_ACTIVE_LOW>;
+ 
+ 	touchscreen@0 {
+ 		compatible = "focaltech,ft8756-spi";
