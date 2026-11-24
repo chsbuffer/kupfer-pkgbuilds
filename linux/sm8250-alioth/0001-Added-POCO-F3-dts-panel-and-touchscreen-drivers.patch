@@ -14,7 +14,7 @@ Subject: [PATCH] Added POCO F3 dts, panel and touchscreen drivers (ported to 7.1
  drivers/input/touchscreen/Makefile                  |    1 +
  8 files changed, 2527 insertions(+)
 ---
---- a/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
+--- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
 @@ -0,0 +1,1344 @@
 +// SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
@@ -1372,7 +1372,7 @@ Subject: [PATCH] Added POCO F3 dts, panel and touchscreen drivers (ported to 7.1
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8350-hdk.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8350-microsoft-surface-duo2.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8350-mtp.dtb
---- a/drivers/gpu/drm/panel/panel-samsung-ams667xx01.c
+--- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-samsung-ams667xx01.c
 @@ -0,0 +1,522 @@
 +// SPDX-License-Identifier: GPL-2.0-only
@@ -1926,7 +1926,7 @@ Subject: [PATCH] Added POCO F3 dts, panel and touchscreen drivers (ported to 7.1
  obj-$(CONFIG_DRM_PANEL_SAMSUNG_AMSA26ZP01) += panel-samsung-amsa26zp01.o
  obj-$(CONFIG_DRM_PANEL_SAMSUNG_ATNA33XC20) += panel-samsung-atna33xc20.o
  obj-$(CONFIG_DRM_PANEL_SAMSUNG_DB7430) += panel-samsung-db7430.o
---- a/drivers/input/touchscreen/ft8756.c
+--- /dev/null
 +++ b/drivers/input/touchscreen/ft8756.c
 @@ -0,0 +1,635 @@
 +// SPDX-License-Identifier: GPL-2.0-only

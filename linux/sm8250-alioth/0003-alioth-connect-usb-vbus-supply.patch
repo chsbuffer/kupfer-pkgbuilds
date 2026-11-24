@@ -1,0 +1,17 @@
+Subject: [PATCH] arm64: dts: qcom: sm8250-xiaomi-alioth: connect USB VBUS supply
+
+The Type-C port falls back to a dummy regulator when no VBUS supply is
+specified. Connect the already enabled PM8150B VBUS regulator so TCPM can
+enable the real 5V output when the port acts as a power source.
+
+--- a/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
++++ b/arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts
+@@ -1052,6 +1052,8 @@
+ 	connector {
+ 		compatible = "usb-c-connector";
+ 
++		vbus-supply = <&pm8150b_vbus>;
++
+ 		power-role = "dual";
+ 		data-role = "dual";
+ 		try-power-role = "sink";

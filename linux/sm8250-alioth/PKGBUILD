@@ -1,8 +1,9 @@
 _mode=cross
 _nodeps=true
-pkgname=linux-sm8250-alioth
+pkgbase=linux-sm8250-alioth
+pkgname=("$pkgbase" "$pkgbase-headers")
 pkgver=7.2.0
-pkgrel=3
+pkgrel=5
 pkgdesc="Qualcomm SM8250 kernel for Xiaomi alioth (HyperOS memory layout)"
 _arches=specific
 arch=(aarch64)
@@ -20,6 +21,8 @@ source=(
     0001-Added-POCO-F3-dts-panel-and-touchscreen-drivers.patch
     0002-alioth-hyperos-firmware-memory-layout.patch
     0002-Disable-panel-and-touchscreen.patch
+    0003-alioth-connect-usb-vbus-supply.patch
+    extra_config
     linux.preset
     60-linux.hook
     90-linux.hook
@@ -27,9 +30,11 @@ source=(
 sha512sums=(
     26d48ebd04c43e993bd00f9c055d40daf87b4919332c974e3c0db236135b522415e3dcf4b512e4028cc42da63fe4639991c3870bcb977967846db590a0b950b7
     fad174b4e13fd5562c4be324ade4e516fc6e698b92200c62e939df1938880bc8df7546467926f94baa3e2f81b964f5a310a93f0ff548cc99ec96bbfeae1d4369
-    041f7dc7c8e1f3ef39e00a6466ed16b6e74305d288a328f31a6ce32cb07aa80b96ff7930ea87e054463ff317d3d3b7ae8f360f6ba33bb1857a10d326863c4aa1
+    2709b04e0ff872e7b4f951826bdf10d439e8b554fbba59a57920cc3b6737f1f5e952f76025f2f4b40b881d36b60ef0d61d45a4d406040c312fb507b9ffbad418
     64472e69df200f2571bb20a0ebeda92cb19f9acf5bffb0f78b447066b1187ed2ff453ddc76256663abaa506cb88dfe2f901e7fde361e3e6729f3fc7342cde30b
     84f0858efe4aab4deaf65ceee9201c66e2908dff5231c118ababdaa6d3abffaf40722c3086bf27da2622d289770289cd8f6047ccec8de08a76f3df5e763087c7
+    bb4c27ef238a8ad690d135971d8ddd47a4d5f6d6a35ddd37e08b3e0a7be734414314403cb9a55968f2af4f6bfb080c9180a58a757696c81192d19451945f71f6
+    a956934c812a8d5886c79e07197a5d9fad4c95eea683e04eca0c977d6bd66dbe2a6bc91523b7d47d0668adbebdc2d259693ec0027c000464c90746f48064916e
     a492aae17ee4a316ce03faf9f1b284b2529c485f4b092cc4a1f865a6c68d482fd356fd30efa296c116975a3bdf3922f5bf03912a8d0e76f4ab24aa6ab9f8c276
     7ad5be75ee422dda3b80edd2eb614d8a9181e2c8228cd68b3881e2fb95953bf2dea6cbe7900ce1013c9de89b2802574b7b24869fc5d7a95d3cc3112c4d27063a
     b6b3ddd1a3c1e33341aa43a6cbe205c81c13ca6632fa7e553152d71b5fe45bdf44aea099514ccd1d78055a4656bf0ac3c7cb2f3a14abb2a5ab8872a7dcacff08
@@ -38,10 +43,18 @@ sha512sums=(
 
 prepare() {
     cd "$srcdir/linux-$_tag"
+    # Re-extraction leaves files added by patches in an existing source tree.
+    rm -f arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dts \
+        drivers/gpu/drm/panel/panel-samsung-ams667xx01.c \
+        drivers/input/touchscreen/ft8756.c
     patch -Np1 -i "$srcdir/0001-Added-POCO-F3-dts-panel-and-touchscreen-drivers.patch"
     patch -Np1 -i "$srcdir/0002-alioth-hyperos-firmware-memory-layout.patch"
     patch -Np1 -i "$srcdir/0002-Disable-panel-and-touchscreen.patch"
+    patch -Np1 -i "$srcdir/0003-alioth-connect-usb-vbus-supply.patch"
     cp "$srcdir/config-postmarketos-qcom-sm8250-alioth.aarch64" .config
+    cat ../extra_config >>.config
+    echo 'CONFIG_NETFILTER_XT_CONNMARK=m' >>.config
+    echo 'CONFIG_NETFILTER_XT_SET=m' >>.config
     make ARCH=arm64 LLVM=1 olddefconfig
 }
 
@@ -51,7 +64,7 @@ build() {
     make ARCH=arm64 LLVM=1 KBUILD_BUILD_VERSION="2-postmarketos-qcom-sm8250-alioth" Image.gz modules dtbs
 }
 
-package() {
+package_linux-sm8250-alioth() {
     cd "$srcdir/linux-$_tag"
     unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
     local kernver
@@ -66,14 +79,48 @@ package() {
     install -Dm644 arch/arm64/boot/dts/qcom/sm8250-xiaomi-alioth.dtb         "$pkgdir/boot/dtbs/qcom/sm8250-xiaomi-alioth.dtb"
     install -Dm644 .config "$pkgdir/boot/config-linux-sm8250-alioth"
     install -Dm644 System.map "$pkgdir/boot/System.map-linux-sm8250-alioth"
-    printf '%s\n' "$pkgname" > "$pkgdir/usr/lib/modules/$kernver/pkgbase"
+    printf '%s\n' "$pkgbase" > "$pkgdir/usr/lib/modules/$kernver/pkgbase"
     # No separate extramodules directory is shipped by this kernel.
-    local subst="s/%PKGBASE%/$pkgname/g; s/%KERNVER%/$kernver/g; /%EXTRAMODULES%/d"
+    local subst="s/%PKGBASE%/$pkgbase/g; s/%KERNVER%/$kernver/g; /%EXTRAMODULES%/d"
     sed "$subst" "$srcdir/linux.preset" |
         install -Dm644 /dev/stdin "$pkgdir/etc/mkinitcpio.d/linux.preset"
     local hook
     for hook in 60 90; do
         sed "$subst" "$srcdir/$hook-linux.hook" |
-            install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/$hook-$pkgname.hook"
+            install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/$hook-$pkgbase.hook"
     done
+}
+
+package_linux-sm8250-alioth-headers() {
+    pkgdesc="Headers and build scripts for the Xiaomi alioth kernel"
+    depends=(clang llvm lld)
+    backup=()
+
+    cd "$srcdir/linux-$_tag"
+    local kernver builddir
+    kernver="$(make -s ARCH=arm64 LLVM=1 kernelrelease)"
+    builddir="$pkgdir/usr/lib/modules/$kernver/build"
+
+    # DKMS needs the prepared build tree and symbol table from this kernel.
+    install -Dt "$builddir" -m644 Makefile .config Module.symvers System.map
+    install -Dt "$builddir/kernel" -m644 kernel/Makefile
+    cp -a include scripts "$builddir/"
+
+    install -Dt "$builddir/arch/arm64" -m644 arch/arm64/Makefile
+    install -Dt "$builddir/arch/arm64/kernel" -m644 arch/arm64/kernel/asm-offsets.s
+    cp -a arch/arm64/include arch/arm64/tools "$builddir/arch/arm64/"
+    mkdir -p "$builddir/arch/arm"
+    cp -a arch/arm/include "$builddir/arch/arm/"
+
+    find . -type f -name 'Kconfig*' -exec cp --parents -t "$builddir" {} +
+
+    if grep -q '^CONFIG_DEBUG_INFO_BTF_MODULES=y' .config; then
+        install -Dt "$builddir" -m644 vmlinux
+        install -Dt "$builddir/tools/bpf/resolve_btfids" -m755 \
+            tools/bpf/resolve_btfids/resolve_btfids
+    fi
+
+    # DTC contains source-tree links that are not needed to build modules.
+    find -L "$builddir" -type l -delete
+    chmod -R u=rwX,go=rX "$builddir"
 }
